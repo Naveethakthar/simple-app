@@ -50,20 +50,28 @@ stage('SonarQube Analysis') {
             }
         }
 
-        stage('Push to DockerHub') {
-            steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'USER',
-                    passwordVariable: 'PASS'
-                )]) {
-                    bat '''
-                    echo %PASS% | docker login -u %USER% --password-stdin
-                    docker push %DOCKER_IMAGE%:latest
-                    '''
-                }
-            }
+       stage('Push to DockerHub') {
+    environment {
+        DOCKER_IMAGE = "naveethakthar/simple-app"
+    }
+    steps {
+        // ← THIS LINE BUILDS THE DOCKER IMAGE
+        bat "docker build -t %DOCKER_IMAGE%:latest ."
+
+        // Login and push
+        withCredentials([usernamePassword(
+            credentialsId: 'dockerhub-creds',
+            usernameVariable: 'USER',
+            passwordVariable: 'PASS'
+        )]) {
+            bat ''' 
+            echo %PASS% | docker login -u %USER% --password-stdin
+            docker push %DOCKER_IMAGE%:latest
+            '''
         }
+    }
+}
+
 
         stage('Deploy') {
             steps {
