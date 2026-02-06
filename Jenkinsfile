@@ -22,19 +22,20 @@ pipeline {
                 '''
             }
         }
-
-        stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('sonar') {
-                    bat '''
-                    sonar-scanner ^
-                    -Dsonar.projectKey=simple-app ^
-                    -Dsonar.sources=.
-                    '''
-                }
+stage('SonarQube Analysis') {
+    steps {
+        script {
+            def scannerHome = tool 'sonar-scanner'
+            withSonarQubeEnv('sonar') {
+                bat """
+                ${scannerHome}\\bin\\sonar-scanner ^
+                -Dsonar.projectKey=simple-app ^
+                -Dsonar.sources=.
+                """
             }
         }
-
+    }
+}
         stage('Quality Gate') {
             steps {
                 timeout(time: 1, unit: 'MINUTES') {
